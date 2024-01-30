@@ -57,6 +57,7 @@ int init() {
         glob = fopen("/home/ekuld/.proj/email.txt", "r");
         fgets(email, HIGH, glob);
         f = fopen("email.txt", "w");
+        mkdir("stage", 0755);
         fputs(email, f);
         fclose(f), fclose(glob);
         chdir("..");
@@ -97,30 +98,66 @@ int alias(char *line[]) {
 }
 
 void makeFileName(char *directory, char *name) {
-    int x = 9;
-    printf("%d\n", x++);
-    for (int i = strlen(directory) - 1; i >= 0; i--) {
-        printf("%d\n", x++);
+    for (int i = strlen(directory) - 1; i >= 0; i--) {        
         if (directory[i] == '/') {
             for (int j = 0; j < i; j++) 
-                name[j] = directory[i - j];
+                name[j] = directory[i + j + 1];
             directory[i] = '\0';
-            printf("d: %s n: %s\n", directory, name);
             return;
-        }  
-        printf("%d\n", x++); 
+        }
     }
-    printf("%d\n", x++);
     strcpy(name, directory);
-    directory[0] = '\0';
-    printf("d: %s n: %s\n", directory, name);
+    getcwd(directory, HIGH);
 }
 
-int main (int argc, char* argv[]) {
-    
+int staging(char *line, char *name) {
+    char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH];
+    int backCount;
+    if (chdir(line) != 0) {
+        printf("file/address is not availble!\n");
+        return 1;            
+    }
+    chdir(".meowgit");
+    getcwd(pwd, sizeof(pwd));
+    backCount = checkMeowgit();
+    for (int i = 1; i < backCount; i++) 
+        if (chdir("..") != 0)  printf("eror\n");
+        DIR *dir = opendir(".");
+        struct dirent *entry; 
+        if (dir == NULL) {
+            perror("Error opening current directory");
+            return -1;
+        }
+        int openError = 1;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, name) == 0) {
+                if (entry->d_type == 4) 
+                    strcpy(cmd, "cp -r ");
+                else 
+                    strcpy(cmd, "cp ");
+                openError = 0;
+                break;
+                }
+        }
+        if (openError) {
+            printf("file/address is not availble!!\n");
+            return 0;
+        }
+        chdir(".meowgit");
+        chdir("stage");
+        getcwd(meowgitFol, HIGH);
+        strcat(cmd, line);
+        strcat(cmd, "/");
+        strcat(cmd, name);
+        strcat(cmd, " ");
+        strcat(cmd, meowgitFol);
+        system(cmd);
+}
+
+int main (int argc, char* argv[]) {    
     int i = 0;
     int backCount = checkMeowgit();
-
+    char cmd[HIGH], name[HIGH], line[HIGH], userName[HIGH], userEmail[HIGH], pwd[HIGH];
     if (argc < 2) {
         invalid;
         return 0;
@@ -128,7 +165,6 @@ int main (int argc, char* argv[]) {
     if (strcmp(argv[1], "init") == 0) {
         return init();
     } else if (strcmp(argv[1], "config") == 0) {
-        char userName[HIGH], userEmail[HIGH], pwd[HIGH];
         getcwd(pwd, sizeof(pwd));
         FILE *con;
         if (!(strcmp(argv[2], "-global"))) {
@@ -165,25 +201,36 @@ int main (int argc, char* argv[]) {
             }
         }
     } else if (strcmp(argv[1], "add") == 0) {
-        char name[HIGH];
-        if (backCount) {
+        if (backCount == 0) {
             initialize;
-            return 0;
+            return 0; 
         }
         if (!(strcmp(argv[2], "-f"))) {
-
+            for (int i = 3; i < argc; i++) {
+                getcwd(pwd, HIGH);
+                strcpy(line, argv[i]);
+                makeFileName(line, name);
+                staging(line, name);
+                line[0] = '\0';  
+                name[0] = '\0'; 
+                chdir(pwd);
+            }
         } else if (!(strcmp(argv[2], "-n"))) {
 
         } else if (!strcmp(argv[2], "-redo")) {
 
         } else {
-            char directory[HIGH];
-            makeFileName(directory, name);
+            strcpy(line, argv[2]);
+            makeFileName(line, name);
+            staging(line, name);
         }
     } else if (strcmp(argv[1], "reset") == 0) {
+
+
+
+    
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
     }
-
     return 0;
 }
