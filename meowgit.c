@@ -16,90 +16,49 @@
 
 
 int checkMeowgit();
-int globalConfig(char *userName, char *userEmail);
+int globalConfig(char *userName, char *userEmail, char which);
 int init();
 int alias(char *line[]);
 
-
-int login(char *line[]) {
-    printf("kosssss");
-
-    printf("ss\n");
-    int i = 0;
-    getcwd(pwd, sizeof(pwd));
-    int backCount = checkMeowgit();
-    for (int i = 1; i < backCount; i++) 
-        chdir("..");
-    printf("ddd");
-    FILE *read = fopen(".meowgit/config.txt", "r");
-    printf("ssss");
-    if (read != NULL) {
-        printf("injaiim\n");
-        fscanf(read , "user name : %s\n", userName);
-        fscanf(read, "user email : %s", userEmail);
-        printf("%s \n%s\n", userName, userEmail);
+int globalConfig(char *userName, char *userEmail, char which) {
+    char address[HIGH];
+    FILE *add = fopen("/home/ekuld/.proj/address.txt", "r");
+    while(fgets(address, HIGH, add)) {
+        char cmd[HIGH], rm[HIGH];
+        strcpy(cmd, "cp /home/ekuld/.proj/name.txt ");
+        strcat(cmd, address);
+        strcpy(rm, "rm ");
+        address[strlen(address) - 1] = '\0';
+        strcat(address, "/name.txt");
+        strcat(rm, address);
+        system(rm), system(cmd);
     }
-    chdir(pwd);
-    fclose(read);
-    if (!(strcmp(line[2], "-global"))) {
-        if (!(strcmp(line[4], "user.name"))) {
-            strcpy(userName, line[5]);
-        } else if (!(strcmp(line[4], "user.email"))) {
-            strcpy(userEmail, line[5]);
-        }
-    } else {
-        if (!(strcmp(line[3], "user.name"))) {
-            strcpy(userName, line[4]);
-        } else if (!(strcmp(line[3], "user.email"))) {
-            strcpy(userEmail, line[4]);
-        }
-    }
-    printf("%d\n", i++);
-    printf("user : %s \n%s\n", userName, userEmail);
-
-    if (!(strcmp("-global", line[2]))) {
-        printf("globalim\n");
-        globalConfig(userName, userEmail);
-    } else {
-        printf("globalim naa\n");
-        for (int i = 1; i < backCount; i++) 
-            chdir("..");
-        if (backCount == 0) {
-            printf("could not find the repo !\n");
-        } else {
-            FILE *config = fopen(".meowgit/config.txt", "w");
-            fprintf(config, "user name : %s\n", userName);
-            fprintf(config, "user email : %s\n", userEmail);
-            // fprintf(config, "user name : %s\n", userName);
-            // for branches !;
-            printf("config sucsessfull\n");
-        }
-    }
-}
-
-int globalConfig(char *userName, char *userEmail) {
-    DIR *dir = opendir(".");
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if ((strcmp(".meowgit", entry->d_name) == 0) && (entry->d_type == 3)) {
-            FILE *config = fopen(".meowgit/config.txt", "w");
-            fprintf(config, "user name : %s\n", userName);
-            fprintf(config, "user email : %s\n", userEmail);  
-            return 0;
-        } 
-        if (entry->d_type == 4) {
-            chdir(entry->d_name);
-            globalConfig(userName, userEmail);
-        }
-    }
-    return 1;
+    // pooshe ba space !!!!fucked up!!!
 }
 
 int init() {
     if (checkMeowgit() != 0) {
         printf("meowgit has already initialize\n");
     } else {
+        FILE *add = fopen("/home/ekuld/.proj/address.txt", "a");
+        char pwd[HIGH];        
+        char name[HIGH], email[HIGH];
         mkdir (".meowgit", 0755);
+        chdir(".meowgit");
+        getcwd(pwd, sizeof(pwd));
+        fprintf(add, "%s\n", pwd);
+        fclose(add);
+        FILE *glob = fopen("/home/ekuld/.proj/name.txt", "r");
+        fgets(name, HIGH, glob);
+        FILE *f = fopen("name.txt", "w");
+        fputs(name, f);
+        fclose(f), fclose(glob);
+        glob = fopen("/home/ekuld/.proj/email.txt", "r");
+        fgets(email, HIGH, glob);
+        f = fopen("email.txt", "w");
+        fputs(email, f);
+        fclose(f), fclose(glob);
+        chdir("..");
         printf("init was succesful :)\n");
     }
 }
@@ -137,7 +96,9 @@ int alias(char *line[]) {
 }
 
 int main (int argc, char* argv[]) {
-    printf("hell\n");
+    
+    int i = 0;
+
     if (argc < 2) {
         invalid;
         return 0;
@@ -146,16 +107,48 @@ int main (int argc, char* argv[]) {
         return init();
     } else if (strcmp(argv[1], "config") == 0) {
         char userName[HIGH], userEmail[HIGH], pwd[HIGH];
-
-
-        login(argv);
+        getcwd(pwd, sizeof(pwd));
+        FILE *con;
+        if (!(strcmp(argv[2], "-global"))) {
+            if (!(strcmp(argv[3], "user.name"))) {
+                strcpy(userName, argv[4]);
+                con = fopen("/home/ekuld/.proj/name.txt", "w");
+                fputs(userName, con);
+                fclose(con);
+                globalConfig(userName, userEmail, 'u');
+            } else if (!(strcmp(argv[3], "user.email"))) {
+                strcpy(userEmail, argv[4]);
+                con = fopen("/home/ekuld/.proj/email.txt", "w");
+                fputs(userEmail, con);
+                fclose(con);
+                globalConfig(userName, userEmail, 'e');
+            }
+        } else {
+            int backCount = checkMeowgit();
+            if (backCount == 0) {
+                printf("meowgit is not initilaized\n");
+                return 0;
+            }
+            for (int i = 1; i < backCount; i++) 
+                chdir("..");
+            if (!(strcmp(argv[2], "user.name"))) {
+                strcpy(userName, argv[3]);
+                con = fopen(".meowgit/name.txt", "w");
+                fputs(userName, con);
+                fclose(con);
+            } else if (!(strcmp(argv[2], "user.email"))) {
+                strcpy(userEmail, argv[3]);
+                con = fopen(".meowgit/email.txt", "w");
+                fputs(userEmail, con);
+                fclose(con);
+            }
+        }
     } else if (strcmp(argv[1], "add") == 0) {
 
     } else if (strcmp(argv[1], "reset") == 0) {
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
     }
-
 
     return 0;
 }
