@@ -13,6 +13,7 @@
 #define LOW 200
 #define MED 500
 #define HIGH 1000
+#define initialize printf("meowgit is not initilaized\n")
 
 
 int checkMeowgit();
@@ -95,9 +96,30 @@ int alias(char *line[]) {
     alias[strlen(line[3]) - 5] = '\0' ;
 }
 
+void makeFileName(char *directory, char *name) {
+    int x = 9;
+    printf("%d\n", x++);
+    for (int i = strlen(directory) - 1; i >= 0; i--) {
+        printf("%d\n", x++);
+        if (directory[i] == '/') {
+            for (int j = 0; j < i; j++) 
+                name[j] = directory[i - j];
+            directory[i] = '\0';
+            printf("d: %s n: %s\n", directory, name);
+            return;
+        }  
+        printf("%d\n", x++); 
+    }
+    printf("%d\n", x++);
+    strcpy(name, directory);
+    directory[0] = '\0';
+    printf("d: %s n: %s\n", directory, name);
+}
+
 int main (int argc, char* argv[]) {
     
     int i = 0;
+    int backCount = checkMeowgit();
 
     if (argc < 2) {
         invalid;
@@ -124,7 +146,6 @@ int main (int argc, char* argv[]) {
                 globalConfig(userName, userEmail, 'e');
             }
         } else {
-            int backCount = checkMeowgit();
             if (backCount == 0) {
                 printf("meowgit is not initilaized\n");
                 return 0;
@@ -144,7 +165,21 @@ int main (int argc, char* argv[]) {
             }
         }
     } else if (strcmp(argv[1], "add") == 0) {
+        char name[HIGH];
+        if (backCount) {
+            initialize;
+            return 0;
+        }
+        if (!(strcmp(argv[2], "-f"))) {
 
+        } else if (!(strcmp(argv[2], "-n"))) {
+
+        } else if (!strcmp(argv[2], "-redo")) {
+
+        } else {
+            char directory[HIGH];
+            makeFileName(directory, name);
+        }
     } else if (strcmp(argv[1], "reset") == 0) {
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
