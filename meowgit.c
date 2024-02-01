@@ -156,47 +156,33 @@ int staging(char *line, char *name) {
 
 
 
-void reseting(char *line, char *name,char *cd) {
-    chdir(cd);
-    char pwd[HIGH], pwdTmp[HIGH], pwdRec[HIGH], meowgitFol[HIGH], cmd[HIGH];
-    getcwd(pwd, HIGH);
-    int backCount = checkMeowgit();
-    for (int i = 1; i < backCount; i++) 
-        chdir("..");
-    chdir(".meowgit/stage");
+void reseting(char *name) {
     DIR *dir = opendir(".");
+    char cmd[HIGH], pwd[HIGH], firstPwd[HIGH];
     struct dirent *entry;
-    while((entry = readdir(dir)) != NULL) {
-        if(!strcmp(name, entry->d_name)) {
-            if (entry->d_type == 4) {
-                strcpy(cmd, "rmdir -r ");
-            } else {
-                strcpy(cmd, "rm ");
-            }
-            getcwd(pwdTmp, HIGH);
-            strcat(cmd, pwdTmp);
-            strcat(cmd, "/");
-            strcat(cmd, name);
-            printf("cmd : %s\n", cmd);
+    int find = 0;
+    while ((entry = readdir(dir)) != NULL) {
+        if (!strcmp(entry->d_name, name)) {
+            strcpy(cmd, "rm ");
+            if (entry->d_type == 4)
+                strcat(cmd, "-r ");
+            getcwd(pwd, HIGH);
+            find = 1;
             break;
-        } else if (entry->d_type == 4 && strcmp(".", entry->d_name) && strcmp("..", entry->d_name)) {
-            getcwd(pwdRec, HIGH);
-            printf("rec : %s\n", entry->d_name);
-            printf("1");
-            strcpy(cd, pwdRec);
-            printf("1");
-            strcat(cd, "/");
-            printf("1");
-            strcat(cd, entry->d_name);
-            printf("cd : %s\n", cd);
-            getcwd(pwdRec, HIGH);
-            closedir(dir);
-            reseting(line, name, cd);
-            chdir(pwdRec);
-        }
+        } else if (entry->d_type == 4 && strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
+            chdir(entry->d_name);
+            reseting(name);
+            chdir("..");
+        }   
     }
     closedir(dir);
-    chdir(pwd);
+    if (find) {
+        strcat(cmd, pwd);
+        strcat(cmd, "/");
+        strcat(cmd, name);
+        system(cmd);
+    }
+    return;
 }
 
 
@@ -277,7 +263,12 @@ int main (int argc, char* argv[]) {
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
-            reseting(line, name, ".");
+            getcwd(pwd, HIGH);
+            for (int i = 1; i < backCount; i++)
+                chdir("..");
+            chdir(".meowgit/stage");
+            reseting(name);
+            chdir(pwd);
         }
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
