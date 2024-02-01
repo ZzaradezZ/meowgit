@@ -137,8 +137,9 @@ int staging(char *line, char *name) {
             else 
                 strcpy(cmd, "cp ");
             openError = 0;
+            printf("break\n");
             break;
-            }
+        }
     }
     if (openError) {
         printf("file/address is not availble!!\n");
@@ -156,10 +157,40 @@ int staging(char *line, char *name) {
 }
 
 void reseting(char *line, char *name) {
-    char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH];
-    
-
-
+    char pwd[HIGH], pwdTmp[HIGH], pwdRec[HIGH], meowgitFol[HIGH], cmd[HIGH];
+    getcwd(pwd, HIGH);
+    int backCount = checkMeowgit();
+    for (int i = 1; i < backCount; i++) 
+        chdir("..");
+    chdir(".meowgit/stage");
+    system("pwd");
+    DIR *dir = opendir(".");
+    struct dirent *entry;
+    while((entry = readdir(dir)) != NULL) {
+        printf("%s\n", entry->d_name);
+        if(!strcmp(name, entry->d_name)) {
+            if (entry->d_type == 4) {
+                strcpy(cmd, "rm -r ");
+            } else {
+                strcpy(cmd, "rm ");
+            }
+            getcwd(pwdTmp, HIGH);
+            strcat(cmd, pwdTmp);
+            strcat(cmd, name);
+            printf("%s\n", cmd);
+            break;
+        } else if (entry->d_type == 4 && strcmp(".", entry->d_name) && strcmp("..", entry->d_name)) {
+            printf("dname : %s\n", entry->d_name);
+            getcwd(pwdRec, HIGH);
+            chdir(entry->d_name);
+            printf("we r here :");
+            system("pwd");
+            reseting(line, name);
+            chdir(pwdRec);
+        }
+    }
+    closedir(dir);
+    chdir(pwd);
 }
 
 int main (int argc, char* argv[]) {    
@@ -239,10 +270,9 @@ int main (int argc, char* argv[]) {
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
+            printf("%s %s\n", line , name);
             reseting(line, name);
         }
-
-
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
     }
