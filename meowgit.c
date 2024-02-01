@@ -113,45 +113,53 @@ void makeFileName(char *directory, char *name) {
 int staging(char *line, char *name) {
     char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH];
     int backCount;
+    getcwd(pwd, HIGH);
     if (chdir(line) != 0) {
         printf("file/address is not availble!\n");
         return 1;            
     }
-    chdir(".meowgit");
-    getcwd(pwd, sizeof(pwd));
+    chdir(pwd);
     backCount = checkMeowgit();
     for (int i = 1; i < backCount; i++) 
         if (chdir("..") != 0)  printf("eror\n");
-        DIR *dir = opendir(".");
-        struct dirent *entry; 
-        if (dir == NULL) {
-            perror("Error opening current directory");
-            return -1;
-        }
-        int openError = 1;
-        while ((entry = readdir(dir)) != NULL) {
-            if (strcmp(entry->d_name, name) == 0) {
-                if (entry->d_type == 4) 
-                    strcpy(cmd, "cp -r ");
-                else 
-                    strcpy(cmd, "cp ");
-                openError = 0;
-                break;
-                }
-        }
-        if (openError) {
-            printf("file/address is not availble!!\n");
-            return 0;
-        }
-        chdir(".meowgit");
-        chdir("stage");
-        getcwd(meowgitFol, HIGH);
-        strcat(cmd, line);
-        strcat(cmd, "/");
-        strcat(cmd, name);
-        strcat(cmd, " ");
-        strcat(cmd, meowgitFol);
-        system(cmd);
+    chdir(".meowgit");
+    DIR *dir = opendir(".");
+    struct dirent *entry; 
+    if (dir == NULL) {
+        perror("Error opening current directory");
+        return -1;
+    }
+    int openError = 1;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, name) == 0) {
+            if (entry->d_type == 4) 
+                strcpy(cmd, "cp -r ");
+            else 
+                strcpy(cmd, "cp ");
+            openError = 0;
+            break;
+            }
+    }
+    if (openError) {
+        printf("file/address is not availble!!\n");
+        return 0;
+    }
+    chdir(".meowgit");
+    chdir("stage");
+    getcwd(meowgitFol, HIGH);
+    strcat(cmd, line);
+    strcat(cmd, "/");
+    strcat(cmd, name);
+    strcat(cmd, " ");
+    strcat(cmd, meowgitFol);
+    system(cmd);
+}
+
+void reseting(char *line, char *name) {
+    char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH];
+    
+
+
 }
 
 int main (int argc, char* argv[]) {    
@@ -222,13 +230,19 @@ int main (int argc, char* argv[]) {
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
+            printf("%s\n", line);
             staging(line, name);
         }
     } else if (strcmp(argv[1], "reset") == 0) {
+        if (!strcmp(argv[2], "-f")) {
+
+        } else {
+            strcpy(line, argv[2]);
+            makeFileName(line, name);
+            reseting(line, name);
+        }
 
 
-
-    
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
     }
