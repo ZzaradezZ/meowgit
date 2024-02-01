@@ -118,11 +118,7 @@ int staging(char *line, char *name) {
         printf("file/address is not availble!\n");
         return 1;            
     }
-    chdir(pwd);
     backCount = checkMeowgit();
-    for (int i = 1; i < backCount; i++) 
-        if (chdir("..") != 0)  printf("eror\n");
-    chdir(".meowgit");
     DIR *dir = opendir(".");
     struct dirent *entry; 
     if (dir == NULL) {
@@ -137,7 +133,6 @@ int staging(char *line, char *name) {
             else 
                 strcpy(cmd, "cp ");
             openError = 0;
-            printf("break\n");
             break;
         }
     }
@@ -145,6 +140,8 @@ int staging(char *line, char *name) {
         printf("file/address is not availble!!\n");
         return 0;
     }
+    for (int i = 1; i < backCount; i++) 
+        if (chdir("..") != 0)  printf("eror\n");
     chdir(".meowgit");
     chdir("stage");
     getcwd(meowgitFol, HIGH);
@@ -154,44 +151,55 @@ int staging(char *line, char *name) {
     strcat(cmd, " ");
     strcat(cmd, meowgitFol);
     system(cmd);
+    chdir(pwd);
 }
 
-void reseting(char *line, char *name) {
+
+
+void reseting(char *line, char *name,char *cd) {
+    chdir(cd);
     char pwd[HIGH], pwdTmp[HIGH], pwdRec[HIGH], meowgitFol[HIGH], cmd[HIGH];
     getcwd(pwd, HIGH);
     int backCount = checkMeowgit();
     for (int i = 1; i < backCount; i++) 
         chdir("..");
     chdir(".meowgit/stage");
-    system("pwd");
     DIR *dir = opendir(".");
     struct dirent *entry;
     while((entry = readdir(dir)) != NULL) {
-        printf("%s\n", entry->d_name);
         if(!strcmp(name, entry->d_name)) {
             if (entry->d_type == 4) {
-                strcpy(cmd, "rm -r ");
+                strcpy(cmd, "rmdir -r ");
             } else {
                 strcpy(cmd, "rm ");
             }
             getcwd(pwdTmp, HIGH);
             strcat(cmd, pwdTmp);
+            strcat(cmd, "/");
             strcat(cmd, name);
-            printf("%s\n", cmd);
+            printf("cmd : %s\n", cmd);
             break;
         } else if (entry->d_type == 4 && strcmp(".", entry->d_name) && strcmp("..", entry->d_name)) {
-            printf("dname : %s\n", entry->d_name);
             getcwd(pwdRec, HIGH);
-            chdir(entry->d_name);
-            printf("we r here :");
-            system("pwd");
-            reseting(line, name);
+            printf("rec : %s\n", entry->d_name);
+            printf("1");
+            strcpy(cd, pwdRec);
+            printf("1");
+            strcat(cd, "/");
+            printf("1");
+            strcat(cd, entry->d_name);
+            printf("cd : %s\n", cd);
+            getcwd(pwdRec, HIGH);
+            closedir(dir);
+            reseting(line, name, cd);
             chdir(pwdRec);
         }
     }
     closedir(dir);
     chdir(pwd);
 }
+
+
 
 int main (int argc, char* argv[]) {    
     int i = 0;
@@ -261,7 +269,6 @@ int main (int argc, char* argv[]) {
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
-            printf("%s\n", line);
             staging(line, name);
         }
     } else if (strcmp(argv[1], "reset") == 0) {
@@ -270,8 +277,7 @@ int main (int argc, char* argv[]) {
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
-            printf("%s %s\n", line , name);
-            reseting(line, name);
+            reseting(line, name, ".");
         }
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
