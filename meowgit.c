@@ -7,8 +7,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <time.h>
-
-
+// add salam/hello
 #define invalid printf("Invalid command :(\n");
 #define LOW 200
 #define MED 500
@@ -20,6 +19,7 @@ int checkMeowgit();
 int globalConfig(char *userName, char *userEmail, char which);
 int init();
 int alias(char *line[]);
+
 
 int globalConfig(char *userName, char *userEmail, char which) {
     char address[HIGH];
@@ -33,9 +33,9 @@ int globalConfig(char *userName, char *userEmail, char which) {
         strcat(address, "/name.txt");
         strcat(rm, address);
         system(rm), system(cmd);
-    }
-    // pooshe ba space !!!!fucked up!!!
+    } // pooshe ba space !!!!fucked up!!!
 }
+
 
 int init() {
     if (checkMeowgit() != 0) {
@@ -58,12 +58,18 @@ int init() {
         fgets(email, HIGH, glob);
         f = fopen("email.txt", "w");
         mkdir("stage", 0755);
+        mkdir("undo", 0755);
+        chdir("undo");
+        FILE *file = fopen("undoNum.txt", "w");
+        fprintf(file, "0");
+        fclose(file);
         fputs(email, f);
         fclose(f), fclose(glob);
         chdir("..");
         printf("init was succesful :)\n");
     }
 }
+
 
 int checkMeowgit() {
     char pwd[HIGH], current[HIGH];
@@ -110,8 +116,29 @@ void makeFileName(char *directory, char *name) {
     getcwd(directory, HIGH);
 }
 
+void makeUndo(char *address, char *name) {
+    int undo;
+    int *bug;
+    strcat(address, "/");
+    strcat(address, name);
+    char fileName[HIGH], num[HIGH];
+    strcpy(fileName, "undo");
+    FILE *undoNum = fopen("undoNum.txt", "r");
+    fscanf(undoNum, "%d", bug);
+    fclose(undoNum);
+    undo = *bug;
+    sprintf(num, "%d.txt", undo);
+    strcat(fileName, num);
+    FILE *file = fopen(fileName, "w");
+    fprintf(file, "%s", address);
+    FILE *file1 = fopen("undoNum.txt", "w");
+    fprintf(file1, "%d", undo);
+    undo++;
+    fclose(file), fclose(file1);
+}
+
 int staging(char *line, char *name) {
-    char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH];
+    char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH], undo[HIGH];
     int backCount;
     getcwd(pwd, HIGH);
     if (chdir(line) != 0) {
@@ -150,10 +177,11 @@ int staging(char *line, char *name) {
     strcat(cmd, name);
     strcat(cmd, " ");
     strcat(cmd, meowgitFol);
+    // makeUndo(meowgitFol, name);
     system(cmd);
+    // printf("%s\n", cmd);
     chdir(pwd);
 }
-
 
 
 void reseting(char *name) {
@@ -182,10 +210,7 @@ void reseting(char *name) {
         strcat(cmd, name);
         system(cmd);
     }
-    return;
 }
-
-
 
 int main (int argc, char* argv[]) {    
     int i = 0;
@@ -258,18 +283,24 @@ int main (int argc, char* argv[]) {
             staging(line, name);
         }
     } else if (strcmp(argv[1], "reset") == 0) {
+        getcwd(pwd, HIGH);
+        for (int i = 1; i < backCount; i++)
+            chdir("..");
+        chdir(".meowgit/stage");
         if (!strcmp(argv[2], "-f")) {
-
+            for (int i = 3; i < argc; i++) {
+                strcpy(line, argv[i]);
+                makeFileName(line, name);
+                reseting(name);
+            }
+        } else if (!strcmp(argv[2], "-undo")) {
+            
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
-            getcwd(pwd, HIGH);
-            for (int i = 1; i < backCount; i++)
-                chdir("..");
-            chdir(".meowgit/stage");
             reseting(name);
-            chdir(pwd);
         }
+        chdir(pwd);
     } else if (strcmp(argv[1], "commit") == 0) {
     } else if (strcmp(argv[1], "checkout") == 0) {
     }
