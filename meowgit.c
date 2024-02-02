@@ -59,6 +59,7 @@ int init() {
         f = fopen("email.txt", "w");
         mkdir("stage", 0755);
         mkdir("undo", 0755);
+        mkdir("redo", 0755);
         chdir("undo");
         FILE *file = fopen("undoNum.txt", "w");
         fprintf(file, "0");
@@ -116,25 +117,78 @@ void makeFileName(char *directory, char *name) {
     getcwd(directory, HIGH);
 }
 
-void makeUndo(char *address, char *name) {
+void redo() {
+
+
+
+
+
+}
+
+void undoing() {
+    chdir("../undo");
+    FILE *file = fopen("undoNum.txt", "r");
     int undo;
-    int *bug;
+    fscanf(file, "%d", &undo);
+    fclose(file);
+    char fileName[HIGH], line[HIGH], cmd[HIGH], cmdCp[HIGH], name[HIGH], rmUndo[HIGH], pwd[HIGH];
+    sprintf(fileName, "undo%d.txt", undo);
+    FILE *file2 = fopen(fileName, "r");
+    fgets(line, HIGH, file2);
+    fclose(file2);
+    makeFileName(line, name);
+    getcwd(pwd, HIGH);
+    chdir(line);
+    DIR *dir = opendir(".");
+    struct dirent *entry;
+    while((entry = readdir(dir)) != NULL) {
+        if (!strcmp(entry->d_name, name)) {
+            if (entry->d_type == 4) {
+                strcpy(cmd, "rm -r ");
+                strcpy(cmdCp, "cp -r ");
+                strcpy(rmUndo, "rm -r ");
+            } else if (entry->d_type == 8) {
+                strcpy(cmd, "rm ");
+                strcpy(cmdCp, "cp ");
+                strcpy(rmUndo, "rm ");
+            }
+        }
+    }
+    strcat(rmUndo, pwd);
+    strcat(rmUndo, "/");
+    strcat(rmUndo, fileName);       
+    strcat(line, "/");
+    strcat(line, name);
+    closedir(dir);
+    strcat(cmd, line);
+    strcat(cmdCp, line);
+    strcat(cmdCp, " ../undo/redo.txt");
+    system(cmdCp);
+    system(cmd);
+    system(rmUndo);
+    undo--;
+    FILE *file3 = fopen("undoNum.txt", "w");
+    fprintf(file3, "%d", undo);
+    fclose(file3);
+}
+
+void makeUndo(char *address, char *name) {
+    chdir("../undo");
+    int undo;
     strcat(address, "/");
     strcat(address, name);
     char fileName[HIGH], num[HIGH];
-    strcpy(fileName, "undo");
     FILE *undoNum = fopen("undoNum.txt", "r");
-    fscanf(undoNum, "%d", bug);
+    fscanf(undoNum, "%d", &undo);
     fclose(undoNum);
-    undo = *bug;
-    sprintf(num, "%d.txt", undo);
-    strcat(fileName, num);
+    undo++;
+    sprintf(fileName, "undo%d.txt", undo);
     FILE *file = fopen(fileName, "w");
     fprintf(file, "%s", address);
+    fclose(file);
     FILE *file1 = fopen("undoNum.txt", "w");
     fprintf(file1, "%d", undo);
-    undo++;
-    fclose(file), fclose(file1);
+    fclose(file1);
 }
 
 int staging(char *line, char *name) {
@@ -177,8 +231,10 @@ int staging(char *line, char *name) {
     strcat(cmd, name);
     strcat(cmd, " ");
     strcat(cmd, meowgitFol);
-    // makeUndo(meowgitFol, name);
-    system(cmd);
+    makeUndo(meowgitFol, name); 
+    char oof[HIGH];
+    strcpy(oof, cmd);
+    system(oof);
     // printf("%s\n", cmd);
     chdir(pwd);
 }
@@ -276,7 +332,7 @@ int main (int argc, char* argv[]) {
         } else if (!(strcmp(argv[2], "-n"))) {
 
         } else if (!strcmp(argv[2], "-redo")) {
-
+            redo();
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
@@ -294,7 +350,7 @@ int main (int argc, char* argv[]) {
                 reseting(name);
             }
         } else if (!strcmp(argv[2], "-undo")) {
-            
+            undoing();
         } else {
             strcpy(line, argv[2]);
             makeFileName(line, name);
