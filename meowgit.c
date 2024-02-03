@@ -119,10 +119,6 @@ void makeFileName(char *directory, char *name) {
 
 void redo() {
 
-
-
-
-
 }
 
 void undoing() {
