@@ -225,6 +225,7 @@ void makeUndo(char *address, char *name) {
     fclose(file1);
 }
 
+
 void commit(char *massage) {
     unsigned long long id;
     int num;
@@ -250,8 +251,10 @@ void commit(char *massage) {
     FILE *file4 = fopen("commitNum.txt", "w");
     fprintf(file4, "%d", num + 1);
     sprintf(fileName, "commit%d", num);
+    chdir("commit");
     mkdir(fileName, 0755);
-    sprintf(fileName, ".commit%d", num);
+    sprintf(fileName, ".committ%d", num);
+    mkdir(fileName, 0755);
     chdir(fileName);
     FILE *hash = fopen("hash.txt", "w");
     fprintf(hash, "%llu", id);
@@ -262,7 +265,7 @@ void commit(char *massage) {
     FILE *nametxt = fopen("name.txt", "w");
     fprintf(nametxt, "%s", name);
     fclose(nametxt);
-    FILE *emailtxt = fopen("name.txt", "w");
+    FILE *emailtxt = fopen("email.txt", "w");
     fprintf(emailtxt, "%s", email);
     fclose(emailtxt);
     FILE *mass = fopen("massage.txt", "w");
@@ -314,7 +317,7 @@ int staging(char *line, char *name) {
         strcat(cmd, "/");
     }
     if (openError) {
-        printf("file/address is not availble!!\n");
+        // printf("file/address is not availble!!\n");
         return 0;
     }
     for (int i = 1; i < backCount; i++) 
@@ -333,6 +336,7 @@ int staging(char *line, char *name) {
     system(oof);
     chdir(pwd);
 }
+
 
 
 void reseting(char *name) {
@@ -362,6 +366,42 @@ void reseting(char *name) {
         system(cmd);
     }
 }
+
+
+
+void logging() {
+    char pwd[HIGH], fileName[HIGH], name[HIGH], email[HIGH], time[HIGH], massage[HIGH];
+    int num;
+    unsigned long long id;
+    getcwd(pwd, HIGH);
+    strcat(pwd, "/commit");
+    FILE *commitNum = fopen("commitNum.txt", "r");
+    fscanf(commitNum, "%d", &num);
+    fclose(commitNum);
+    chdir("commit");
+    num--;
+    while (num >= 0) {
+        sprintf(fileName, ".committ%d", num);
+        chdir(fileName);
+        FILE *nameread = fopen("name.txt", "r");
+        FILE *emailread = fopen("email.txt", "r");
+        FILE *idread = fopen("hash.txt", "r");
+        FILE *timeread = fopen("time.txt", "r");
+        FILE *massread = fopen("massage.txt", "r");
+        fgets(name, HIGH, nameread);
+        fgets(email, HIGH, emailread);
+        fscanf(idread, "%llu", &id);
+        fgets(time, HIGH, timeread);
+        fgets(massage, HIGH, massread);
+        printf("commit %llu  (master)\n", id);
+        printf("Author: %s %s\nDate: %s\n\n", name, email, time);
+        printf("\t%s\n\n\n", massage);
+        fclose(nameread), fclose(emailread), fclose(idread), fclose(timeread), fclose(massread);
+        chdir("..");
+        num--;
+    }
+}
+
 
 int main (int argc, char* argv[]) {    
     int i = 0;
@@ -423,6 +463,7 @@ int main (int argc, char* argv[]) {
                 line[0] = '\0';  
                 name[0] = '\0'; 
                 chdir(pwd);
+                pwd[0] = '\0';
             }
         } else if (!(strcmp(argv[2], "-n"))) {
 
@@ -470,16 +511,21 @@ int main (int argc, char* argv[]) {
         }
         if (argc > 4) {
             printf("commit massage must be between \"\"\n");
+            return 0;
         }
         if (strlen(argv[3]) > 72) {
-            printf("commit massage is too long(it must be less than 72 char <3 )\n");
+            printf("commit massage is too long(it must be less than 72 char)\n");
             return 0;
         }
         for (int i = 1; i < backCount; i++) 
             chdir("..");
         chdir(".meowgit");
         commit(argv[3]);
-    } else if (strcmp(argv[1], "checkout") == 0) {
+    } else if (strcmp(argv[1], "log") == 0) {
+        for (int i = 1; i < backCount; i++)
+            chdir("..");
+        chdir(".meowgit");
+        logging();
     }
     return 0;
 }
