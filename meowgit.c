@@ -251,6 +251,9 @@ void commit(char *massage) {
     FILE *emailtxt = fopen("name.txt", "w");
     fprintf(emailtxt, "%s", email);
     fclose(emailtxt);
+    FILE *mass = fopen("massage.txt", "w");
+    fprintf(mass, "%s", massage);
+    fclose(mass);
     sprintf(cmd, "mv -r %s/stage/* %s/commit/commit%d",pwd, pwd, num);
 }
 
