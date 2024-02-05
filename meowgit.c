@@ -148,8 +148,14 @@ void undoing() {
     sprintf(fileName, "undo%d.txt", undo);
     FILE *file2 = fopen(fileName, "r");
     if (file2 == NULL) {
-        printf("etefaqi nayoftad XD\n");
-        return;
+        FILE *rechange = fopen("undoNum.txt", "w");
+        fprintf(rechange, "%d", undo - 1);
+        fclose(rechange);
+        if (undo) {
+            undoing();
+        } else {
+            return;
+        }
     }
     fgets(line, HIGH, file2);
     fclose(file2);
@@ -187,6 +193,15 @@ void undoing() {
         FILE *file3 = fopen("undoNum.txt", "w");
         fprintf(file3, "%d", undo);
         fclose(file3);
+    } else {
+        FILE *rechange = fopen("undoNum.txt", "w");
+        fprintf(rechange, "%d", undo - 1);
+        fclose(rechange);
+        if (undo) {
+            undoing();
+        } else {
+            return;
+        }
     }
 }
 
@@ -213,7 +228,7 @@ void makeUndo(char *address, char *name) {
 void commit(char *massage) {
     unsigned long long id;
     int num;
-    char cmd[HIGH], pwd[HIGH], fileName[HIGH], name[HIGH], email[HIGH];
+    char cmd[HIGH], pwd[994], fileName[HIGH], name[HIGH], email[HIGH], numstr[LOW], rm[MED];
     time_t t;
     time(&t);
     FILE *nameread = fopen("name.txt", "r");
@@ -230,13 +245,12 @@ void commit(char *massage) {
     fprintf(file2, "%llu", id+13);
     fclose(file2);
     FILE *file3 = fopen("commitNum.txt", "r");
-    fscanf(file3, "%d", num);
+    fscanf(file3, "%d", &num);
     fclose(file3);
     FILE *file4 = fopen("commitNum.txt", "w");
     fprintf(file4, "%d", num + 1);
     sprintf(fileName, "commit%d", num);
     mkdir(fileName, 0755);
-    free(fileName);
     sprintf(fileName, ".commit%d", num);
     chdir(fileName);
     FILE *hash = fopen("hash.txt", "w");
@@ -254,7 +268,18 @@ void commit(char *massage) {
     FILE *mass = fopen("massage.txt", "w");
     fprintf(mass, "%s", massage);
     fclose(mass);
-    sprintf(cmd, "mv -r %s/stage/* %s/commit/commit%d",pwd, pwd, num);
+    strcpy(cmd, "cp -r ");
+    strcpy(rm, "rm -r ");
+    strcat(cmd, pwd);
+    strcat(rm, pwd);
+    strcat(cmd, "/stage/* ");
+    strcat(rm, "/stage/* ");
+    strcat(cmd, pwd);
+    strcat(cmd, "/commit/commit");
+    sprintf(numstr, "%d", num);
+    strcat(cmd, numstr);
+    system(cmd);
+    system(rm);
 }
 
 int staging(char *line, char *name) {
@@ -446,7 +471,7 @@ int main (int argc, char* argv[]) {
         if (argc > 4) {
             printf("commit massage must be between \"\"\n");
         }
-        if (strlen(argv[3] > 72)) {
+        if (strlen(argv[3]) > 72) {
             printf("commit massage is too long(it must be less than 72 char <3 )\n");
             return 0;
         }
