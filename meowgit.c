@@ -285,6 +285,7 @@ void commit(char *massage) {
     system(rm);
 }
 
+
 int staging(char *line, char *name) {
     char pwd[HIGH], meowgitFol[HIGH], cmd[HIGH], undo[HIGH];
     int backCount;
@@ -311,7 +312,6 @@ int staging(char *line, char *name) {
                 break;
             }
         }
-
     if (slash) {
         strcat(cmd, pwd);
         strcat(cmd, "/");
@@ -336,7 +336,6 @@ int staging(char *line, char *name) {
     system(oof);
     chdir(pwd);
 }
-
 
 
 void reseting(char *name) {
@@ -368,10 +367,9 @@ void reseting(char *name) {
 }
 
 
-
-void logging() {
-    char pwd[HIGH], fileName[HIGH], name[HIGH], email[HIGH], time[HIGH], massage[HIGH];
-    int num;
+void logging(int n) {
+    char pwd[HIGH], fileName[HIGH], name[HIGH], email[HIGH], time[HIGH], massage[HIGH], cmd[HIGH], fileCo[HIGH];
+    int num, fileCount;
     unsigned long long id;
     getcwd(pwd, HIGH);
     strcat(pwd, "/commit");
@@ -380,7 +378,8 @@ void logging() {
     fclose(commitNum);
     chdir("commit");
     num--;
-    while (num >= 0) {
+    while (num >= 0 && n--) {
+        sprintf(fileCo, "commit%d", num);
         sprintf(fileName, ".committ%d", num);
         chdir(fileName);
         FILE *nameread = fopen("name.txt", "r");
@@ -391,16 +390,29 @@ void logging() {
         fgets(name, HIGH, nameread);
         fgets(email, HIGH, emailread);
         fscanf(idread, "%llu", &id);
+        strcpy(cmd, "find ");
+        strcat(cmd, fileCo);
+        strcat(cmd, " -type f | wc -l");
+        strcat(cmd, " > a.txt");
+        chdir("..");
+        system(cmd);
+        chdir(fileName);
+        printf("cmd : %s\n", cmd);
+        system("rm a.txt");
+        FILE *a = fopen("a.txt", "r");
+        fscanf(a, "%d", &fileCount);
+        fclose(a);
         fgets(time, HIGH, timeread);
         fgets(massage, HIGH, massread);
-        printf("commit %llu  (master)\n", id);
-        printf("Author: %s %s\nDate: %s\n\n", name, email, time);
+        printf("commit %llu:%d (master)\n", id, fileCount);
+        printf("Author: %s <%s>\nDate: %s\n\n", name, email, time);
         printf("\t%s\n\n\n", massage);
         fclose(nameread), fclose(emailread), fclose(idread), fclose(timeread), fclose(massread);
         chdir("..");
         num--;
     }
 }
+
 
 
 int main (int argc, char* argv[]) {    
@@ -522,10 +534,20 @@ int main (int argc, char* argv[]) {
         chdir(".meowgit");
         commit(argv[3]);
     } else if (strcmp(argv[1], "log") == 0) {
+        if (backCount == 0) {
+            initialize;
+            return 0;
+        }
         for (int i = 1; i < backCount; i++)
             chdir("..");
         chdir(".meowgit");
-        logging();
+        if (strcmp(argv[2], "-n") == 0) {
+            int logNum;
+            sscanf(argv[3], "%d", &logNum);
+            logging(logNum);
+        } else {
+            logging(1000);
+        }
     }
     return 0;
 }
