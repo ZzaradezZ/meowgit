@@ -336,7 +336,7 @@ int staging(char *line, char *name) {
         strcat(cmd, "/");
     }
     if (openError) {
-        // printf("file/address is not availble!!\n");
+        // printf("file/address is not availble!!\n");   d
         return 0;
     }
     for (int i = 1; i < backCount; i++) 
